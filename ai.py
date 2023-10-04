@@ -2,15 +2,15 @@
 
 # Importing the libraries
 
-import numpy as np
-import random
-import os
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import torch.autograd as autograd
-from torch.autograd import Variable
+import numpy as np #library that allows us to play amd work with arrays
+import random #to take some random samples from different batch
+import os #load the model and save the brain 
+import torch #implementing neural network with pytorch
+import torch.nn as nn #nn modules contains all the tools to implement neural network
+import torch.nn.functional as F #different functions we use when implementing neural network
+import torch.optim as optim #optimizers
+import torch.autograd as autograd 
+from torch.autograd import Variable #convert tensor into a variable containing tensor and gradient
 
 # Creating the architecture of the Neural Network
 
