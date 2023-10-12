@@ -40,3 +40,35 @@ class Network(nn.Module): #inheriting from the Module parent class
         x = F.relu(self.fc1(state)) #hidden neurons
         q_values = self.fc2(x)
         return q_values
+    
+    
+#Implementing Experience Replay
+class ReplayMemory(object):
+    
+    def __init__(self, capacity): # capacity stores the previous exeriences(100)
+        # self.capacity is the name of variable attached to the object, 
+        # capacity is argument we will input when creating object of replay memory class
+        self.capacity = capacity
+        self.memory = [] #will contain last 100 events
+        
+    # push function will append new transition/experience in the memory
+    # make sure memory has always 100 transitions
+    # event is a tuple of four elements: last_state(st), new_state(st+1), last_action(at), last_reward(rt)
+    def push(self, event):
+        self.memory.append(event)
+        if len(self.memory) > self.capacity:
+            del self.memory[0]
+            
+    # sample function will take random samples from the memory
+    # batch_size will have fixed number of samples we want at a time
+    def sample(self, batch_size):
+        # zip * reshapes the list, by using it we are grouping state, rewards and actions together
+        samples = zip(*random.sample(self.memory, batch_size))
+        # map function will do mapping from samples to torch variables
+        # each batch in sample like batch of actions, 
+        # we have to concatenate it with respect to first dimension which corresponds to state
+        # so that everything is well aligned like for each row the state, reward and action corresponds to the same time
+        # the  lambda fn will take the samples concatenate them wrt to 1st dim 
+        # and then eventually we convert these tensors into some Torch vaariable that contains both tensor and gradient
+        return map(lambda x: Variable(torch.cat(x, 0)), samples)
+    
