@@ -72,3 +72,19 @@ class ReplayMemory(object):
         # and then eventually we convert these tensors into some Torch vaariable that contains both tensor and gradient
         return map(lambda x: Variable(torch.cat(x, 0)), samples)
     
+#Implementing Deep Q Learning 
+
+class Dqn():
+    
+    def __init__(self, input_size, nb_action, gamma):# gamma is delay coefficient, parameter of equation
+        self.gamma = gamma
+        self.reward_window = []# mean of reward in reward_window that will slide over time, mean of last 100 rewards increasing with time
+        self.model = Network(input_size, nb_action) # neural n/w of DQ model
+        self.memory = ReplayMemory(100000)
+        self.optimizer = optim.Adam(self.model.parameters, lr = 0.001)
+        self.last_state = torch.Tensor(input_size).unsqueeze(0)
+        self.last_action = 0
+        self.last_reward = 0
+        
+    def select_action(self, state): # i/p of neural network are states
+        probs = F.softmax(self.model(state))
