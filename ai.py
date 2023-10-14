@@ -73,7 +73,6 @@ class ReplayMemory(object):
         return map(lambda x: Variable(torch.cat(x, 0)), samples)
     
 #Implementing Deep Q Learning 
-
 class Dqn():
     
     def __init__(self, input_size, nb_action, gamma):# gamma is delay coefficient, parameter of equation
@@ -82,9 +81,25 @@ class Dqn():
         self.model = Network(input_size, nb_action) # neural n/w of DQ model
         self.memory = ReplayMemory(100000)
         self.optimizer = optim.Adam(self.model.parameters, lr = 0.001)
-        self.last_state = torch.Tensor(input_size).unsqueeze(0)
+        self.last_state = torch.Tensor(input_size).unsqueeze(0) # 0 corressponds to fake dim of state
         self.last_action = 0
         self.last_reward = 0
         
     def select_action(self, state): # i/p of neural network are states
         probs = F.softmax(self.model(state))
+        
+    # training the dnn
+    # whole process of forward and backward propagation
+    def learn(self, batch_state, batch_next_state, batch_reward, batch_action): # transitions of MDP
+        # if we only to self.model(batch_state) we will get the o/p of all possible actions
+        # we want action played by n/w hence we used gather
+        outputs = self.model(batch_state).gather(1, batch_action).unsqueeze(1).squeeze(1) # 1 corressponds to fake dim of action
+        # max of Q values of next state represented by index 0 according to all values that are represented by index 1
+        next_outputs = self.model(batch_next_state).detach().max(1)[0]
+        target = self.gamma*next_outputs + batch_reward
+        td_loss = F.smooth_l1_loss(outputs, target)
+        # applying optimizer on the loss error to perform stochastic gradient descent & update weight
+        # reinitializing optimizer at each iteration
+        self.optimizer.zero_grad()
+        td_loss.backward(retain_variables = True) # back-propagates error in neural n/w
+        self.optimizer.step() # uses optimizer to update weight
